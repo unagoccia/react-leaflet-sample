@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>React Test</title>
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.2/normalize.min.css">
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css">
+        <style>
+            *, *:before, *:after {
+                -webkit-box-sizing: border-box;
+                -moz-box-sizing: border-box;
+                -o-box-sizing: border-box;
+                -ms-box-sizing: border-box;
+                box-sizing: border-box;
+            }
+
+            body,
+            html {
+                height: 100%;
+                margin: 0;
+            }
+
+            #app,
+            #app > div {
+                height: 100%;
+            }
+
+            #app > div {
+                display: flex;
+                justify-content: center;
+	            align-items: center;
+            }
+
+            .leaflet-container {
+                height: 90%;
+                width: 90%;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div id="app"/>
+        <script type="text/javascript" src="dist/bundle.js"></script>
+    </body>
+</html>
