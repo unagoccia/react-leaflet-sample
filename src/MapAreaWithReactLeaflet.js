@@ -25,38 +25,40 @@ export default class MapArea extends React.Component {
         this.showGrid();
     }
 
-    onMapMousedown(e) {
-        const tagName = e.originalEvent.srcElement.tagName;
-        // console.log(tagName);
-        if (tagName == "IMG") {
-            this.imageIsClick = true;
-        } else {
-            this.imageIsClick = false;
-        }
+    // onMapMousedown(e) {
+    //     const tagName = e.originalEvent.srcElement.tagName;
+    //     // console.log(tagName);
+    //     if (tagName == "IMG") {
+    //         this.imageIsClick = true;
+    //     } else {
+    //         this.imageIsClick = false;
+    //     }
+    //
+    //     const map = this.refs.map.leafletElement;
+    //     map.closePopup();
+    // }
 
-        const map = this.refs.map.leafletElement;
-        map.closePopup();
-    }
-
-    onMapMouseup(e) {
-        if (!this.imageIsClick) {
-            // console.dir(e);
-            // console.dir(e.originalEvent);
-            console.log([e.originalEvent.offsetX, e.originalEvent.offsetY]);
-            // console.dir(e.originalEvent.srcElement);
-            console.dir(e.originalEvent.srcElement.currentSrc);
-
-            const pixelCoordinates = {
-                x: e.originalEvent.offsetX,
-                y: e.originalEvent.offsetY
-            };
-            const tileImageUrl = e.originalEvent.srcElement.currentSrc;
-            this.showPopup(e.latlng, pixelCoordinates, tileImageUrl);
-        }
-    }
+    // onMapMouseup(e) {
+    //     if (!this.imageIsClick) {
+    //         // console.dir(e);
+    //         // console.dir(e.originalEvent);
+    //         console.log([e.originalEvent.offsetX, e.originalEvent.offsetY]);
+    //         // console.dir(e.originalEvent.srcElement);
+    //         console.dir(e.originalEvent.srcElement.currentSrc);
+    //
+    //         const pixelCoordinates = {
+    //             x: e.originalEvent.offsetX,
+    //             y: e.originalEvent.offsetY
+    //         };
+    //         const tileImageUrl = e.originalEvent.srcElement.currentSrc;
+    //         this.showPopup(e.latlng, pixelCoordinates, tileImageUrl);
+    //     }
+    // }
 
     onMapClick(e) {
-        if (this.imageIsClick) {
+        const tagName = e.originalEvent.srcElement.tagName;
+        // if (this.imageIsClick) {
+        if (tagName == "IMG") {
             // console.dir(e);
             // console.dir(e.originalEvent);
             console.log([e.originalEvent.offsetX, e.originalEvent.offsetY]);
@@ -94,29 +96,13 @@ export default class MapArea extends React.Component {
 
     render() {
         const position = [this.state.center.lat, this.state.center.lng];
-        return ( <
-            Map ref = "map"
-            center = {
-                position
-            }
-            zoom = {
-                this.state.zoom
-            }
-            onClick = {
-                this.onMapClick.bind(this)
-            }
-            onMouseup = {
-                this.onMapMouseup.bind(this)
-            }
-            onMousedown = {
-                this.onMapMousedown.bind(this)
-            } >
-            <
-            TileLayer url = 'http://{s}.tile.osm.org/{z}/{x}/{y}.png'
-            attribution = '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' /
-            >
-            <
-            /Map>
+        return (
+            <Map ref="map" center={position} zoom={this.state.zoom} onClick={this.onMapClick.bind(this)}>
+                <TileLayer
+                    url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+                    attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                />
+            </Map>
         );
     }
 }

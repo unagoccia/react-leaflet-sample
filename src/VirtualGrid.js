@@ -52,10 +52,10 @@ var VirtualGrid = L.FeatureGroup.extend({
         this._renderCells(e.target.getBounds());
     },
     _renderCells: function(bounds) {
-        var cells = this._cellsInBounds(bounds);
-        this.fire("newcells", cells);
-        for (var i = cells.length - 1; i >= 0; i--) {
-            var cell = cells[i];
+        this._cells = this._cellsInBounds(bounds);
+        this.fire("newcells", this._cells);
+        for (var i = this._cells.length - 1; i >= 0; i--) {
+            var cell = this._cells[i];
             if (this._loadedCells.indexOf(cell.id) === -1) {
                 (function(cell, i) {
                     setTimeout(this.addLayer.bind(this, L.rectangle(cell.bounds, this.options.style)), this.options.delayFactor * i);
@@ -76,6 +76,7 @@ var VirtualGrid = L.FeatureGroup.extend({
         this._cellSize = this.options.cellSize;
         this._setupSize();
         this._loadedCells = [];
+        this._cells = [];
         this.clearLayers();
         this._renderCells(bounds);
     },
@@ -92,6 +93,7 @@ var VirtualGrid = L.FeatureGroup.extend({
         return new L.LatLngBounds(ne, sw);
     },
     _cellsInBounds: function(bounds) {
+        console.dir(bounds);
         var offset = this._map.project(bounds.getNorthWest());
         var center = bounds.getCenter();
         var offsetX = this._origin.x - offset.x;
@@ -115,6 +117,7 @@ var VirtualGrid = L.FeatureGroup.extend({
         cells.sort(function(a, b) {
             return a.distance - b.distance;
         });
+        console.dir(cells);
         return cells;
     }
 });
