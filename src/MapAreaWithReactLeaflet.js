@@ -60,15 +60,15 @@ export default class MapArea extends React.Component {
         // console.dir(e);
         // console.dir(e.originalEvent);
         // console.dir(this.gridGroup);
-        console.dir(this.gridGroup.getCell(e.latlng));
+        // console.dir(this.gridGroup.getCell(e.latlng));
         // console.dir(this.gridGroup.getBounds());
 
         const tagName = e.originalEvent.srcElement.tagName;
         // if (this.imageIsClick) {
         if (tagName == "IMG") {
-            console.log([e.originalEvent.offsetX, e.originalEvent.offsetY]);
+            // console.log([e.originalEvent.offsetX, e.originalEvent.offsetY]);
             // console.dir(e.originalEvent.srcElement);
-            console.dir(e.originalEvent.srcElement.currentSrc);
+            // console.dir(e.originalEvent.srcElement.currentSrc);
 
             const pixelCoordinates = {
                 x: e.originalEvent.offsetX,
@@ -77,7 +77,8 @@ export default class MapArea extends React.Component {
             const tileImageUrl = e.originalEvent.srcElement.currentSrc;
             this.showPopup(e.latlng, pixelCoordinates, tileImageUrl);
         }
-        // this.showGrid();
+        const map = this.refs.map.leafletElement;
+        this.getTile(map.getPixelBounds());
     }
 
     onMapZoomStart(e) {
@@ -107,6 +108,19 @@ export default class MapArea extends React.Component {
         this.gridGroup = new VirtualGrid({
             cellSize: 64
         }).addTo(map);
+    }
+
+    artanh(z) {
+        return 1/2 * Math.log( ( 1 + z ) / ( 1 - z ) );
+    }
+
+    getTile(bounds) {
+        var nw_tx = Math.floor( bounds.min.x / 256 );
+        var nw_ty = Math.floor( bounds.min.y / 256 );
+        var se_tx = Math.floor( bounds.max.x / 256 );
+        var se_ty = Math.floor( bounds.max.y / 256 );
+        console.log([nw_tx, nw_ty]);
+        console.log([se_tx, se_ty]);
     }
 
     render() {
