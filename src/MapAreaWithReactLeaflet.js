@@ -19,6 +19,7 @@ export default class MapArea extends React.Component {
             maxWidth: 400
         });
         this.imageIsClick = false;
+        this.gridGroup;
     }
 
     componentDidMount() {
@@ -56,11 +57,15 @@ export default class MapArea extends React.Component {
     // }
 
     onMapClick(e) {
+        console.dir(e);
+        // console.dir(e.originalEvent);
+        console.dir(this.gridGroup);
+        console.dir(this.gridGroup.getCell(e.latlng));
+        console.dir(this.gridGroup.getBounds());
+
         const tagName = e.originalEvent.srcElement.tagName;
         // if (this.imageIsClick) {
         if (tagName == "IMG") {
-            // console.dir(e);
-            // console.dir(e.originalEvent);
             console.log([e.originalEvent.offsetX, e.originalEvent.offsetY]);
             // console.dir(e.originalEvent.srcElement);
             console.dir(e.originalEvent.srcElement.currentSrc);
@@ -70,7 +75,7 @@ export default class MapArea extends React.Component {
                 y: e.originalEvent.offsetY
             };
             const tileImageUrl = e.originalEvent.srcElement.currentSrc;
-            this.showPopup(e.latlng, pixelCoordinates, tileImageUrl);
+            // this.showPopup(e.latlng, pixelCoordinates, tileImageUrl);
         }
     }
 
@@ -89,7 +94,7 @@ export default class MapArea extends React.Component {
 
     showGrid() {
         const map = this.refs.map.leafletElement;
-        new VirtualGrid({
+        this.gridGroup = new VirtualGrid({
             cellSize: 64
         }).addTo(map);
     }

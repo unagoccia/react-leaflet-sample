@@ -41,6 +41,54 @@ var VirtualGrid = L.FeatureGroup.extend({
         map.off("zoomend", this._zoomHandler, this);
         map.off("resize", this._resizeHandler, this);
     },
+    getCell: function(latlng) {
+        // return this._cells.find(cell => function(latlng) {
+        //     console.log(latlng);
+        //
+        //     var minLat = Math.min(cell.bounds._northEast.lat, cell.bounds._southWest.lat);
+        //     var maxLat = Math.max(cell.bounds._northEast.lat, cell.bounds._southWest.lat);
+        //     var minLng = Math.min(cell.bounds._northEast.lng, cell.bounds._southWest.lng);
+        //     var maxLng = Math.max(cell.bounds._northEast.lng, cell.bounds._southWest.lng);
+        //
+        //     if(minLat<=latlng.lat && latlng.lat<=maxLat && minLng<=latlng.lng && latlng.lng<=maxLng) {
+        //         console.log("-----------------------");
+        //         console.log(minLat<=latlng.lat && latlng.lat<=maxLat && minLng<=latlng.lng && latlng.lng<=maxLng);
+        //         console.log(`${minLat}<=${latlng.lat}:${minLat<=latlng.lat}`);
+        //         console.log(`${latlng.lat}<=${maxLat}:${latlng.lat<=maxLat}`);
+        //         console.log(`${minLng}<=${latlng.lng}:${minLng<=latlng.lng}`);
+        //         console.log(`${latlng.lng}<=${maxLng}:${latlng.lng<=maxLng}`);
+        //         console.log("-----------------------");
+        //         return true;
+        //     }
+        //     return false;
+        // });
+        var result;
+        this._cells.some(function(cell){
+            var minLat = Math.min(cell.bounds._northEast.lat, cell.bounds._southWest.lat);
+            var maxLat = Math.max(cell.bounds._northEast.lat, cell.bounds._southWest.lat);
+            var minLng = Math.min(cell.bounds._northEast.lng, cell.bounds._southWest.lng);
+            var maxLng = Math.max(cell.bounds._northEast.lng, cell.bounds._southWest.lng);
+            // var minLat = cell.bounds._southWest.lat;
+            // var maxLat = cell.bounds._northEast.lat;
+            // var minLng = cell.bounds._northEast.lng;
+            // var maxLng = cell.bounds._southWest.lng;
+
+
+
+            if(minLat<=latlng.lat && latlng.lat<=maxLat && minLng<=latlng.lng && latlng.lng<=maxLng) {
+                console.log("-----------------------");
+                console.log(minLat<=latlng.lat && latlng.lat<=maxLat && minLng<=latlng.lng && latlng.lng<=maxLng);
+                console.log(`${minLat}<=${latlng.lat}:${minLat<=latlng.lat}`);
+                console.log(`${latlng.lat}<=${maxLat}:${latlng.lat<=maxLat}`);
+                console.log(`${minLng}<=${latlng.lng}:${minLng<=latlng.lng}`);
+                console.log(`${latlng.lng}<=${maxLng}:${latlng.lng<=maxLng}`);
+                console.log("-----------------------");
+                result = cell;
+                return true;
+            }
+        });
+        return result;
+    },
     _clearLayer: function(e) {
         this._cells = [];
     },
@@ -93,7 +141,6 @@ var VirtualGrid = L.FeatureGroup.extend({
         return new L.LatLngBounds(ne, sw);
     },
     _cellsInBounds: function(bounds) {
-        console.dir(bounds);
         var offset = this._map.project(bounds.getNorthWest());
         var center = bounds.getCenter();
         var offsetX = this._origin.x - offset.x;
@@ -117,7 +164,6 @@ var VirtualGrid = L.FeatureGroup.extend({
         cells.sort(function(a, b) {
             return a.distance - b.distance;
         });
-        console.dir(cells);
         return cells;
     }
 });
