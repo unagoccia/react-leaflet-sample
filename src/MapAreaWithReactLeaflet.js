@@ -57,11 +57,11 @@ export default class MapArea extends React.Component {
     // }
 
     onMapClick(e) {
-        console.dir(e);
+        // console.dir(e);
         // console.dir(e.originalEvent);
-        console.dir(this.gridGroup);
+        // console.dir(this.gridGroup);
         console.dir(this.gridGroup.getCell(e.latlng));
-        console.dir(this.gridGroup.getBounds());
+        // console.dir(this.gridGroup.getBounds());
 
         const tagName = e.originalEvent.srcElement.tagName;
         // if (this.imageIsClick) {
@@ -75,12 +75,22 @@ export default class MapArea extends React.Component {
                 y: e.originalEvent.offsetY
             };
             const tileImageUrl = e.originalEvent.srcElement.currentSrc;
-            // this.showPopup(e.latlng, pixelCoordinates, tileImageUrl);
+            this.showPopup(e.latlng, pixelCoordinates, tileImageUrl);
         }
+        // this.showGrid();
+    }
+
+    onMapZoomStart(e) {
+        const map = this.refs.map.leafletElement;
+        map.removeLayer(this.gridGroup);
+    }
+
+    onMapZoomEnd(e) {
+        this.showGrid();
     }
 
     showPopup(latlng, pixelCoordinates, tileImageUrl) {
-        console.dir(latlng);
+        // console.dir(latlng);
         const map = this.refs.map.leafletElement;
         this.popup
             .setLatLng(latlng)
@@ -102,7 +112,7 @@ export default class MapArea extends React.Component {
     render() {
         const position = [this.state.center.lat, this.state.center.lng];
         return (
-            <Map ref="map" center={position} zoom={this.state.zoom} onClick={this.onMapClick.bind(this)}>
+            <Map ref="map" center={position} zoom={this.state.zoom} onClick={this.onMapClick.bind(this)} onZoomend={this.onMapZoomEnd.bind(this)} onZoomstart={this.onMapZoomStart.bind(this)}>
                 <TileLayer
                     url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
