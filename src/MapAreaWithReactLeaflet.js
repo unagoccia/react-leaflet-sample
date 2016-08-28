@@ -2,6 +2,7 @@ import React from 'react';
 import { render } from 'react-dom';
 import L from 'leaflet';
 import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
+import VirtualGrid from "./VirtualGrid.js";
 
 export default class MapArea extends React.Component {
 
@@ -14,14 +15,20 @@ export default class MapArea extends React.Component {
             },
             zoom: 15,
         }
-        this.popup = L.popup({maxWidth:400});
+        this.popup = L.popup({
+            maxWidth: 400
+        });
         this.imageIsClick = false;
+    }
+
+    componentDidMount() {
+        this.showGrid();
     }
 
     onMapMousedown(e) {
         const tagName = e.originalEvent.srcElement.tagName;
         // console.log(tagName);
-        if(tagName == "IMG") {
+        if (tagName == "IMG") {
             this.imageIsClick = true;
         } else {
             this.imageIsClick = false;
@@ -32,10 +39,10 @@ export default class MapArea extends React.Component {
     }
 
     onMapMouseup(e) {
-        if(!this.imageIsClick) {
+        if (!this.imageIsClick) {
             // console.dir(e);
             // console.dir(e.originalEvent);
-            console.log([e.originalEvent.offsetX,e.originalEvent.offsetY]);
+            console.log([e.originalEvent.offsetX, e.originalEvent.offsetY]);
             // console.dir(e.originalEvent.srcElement);
             console.dir(e.originalEvent.srcElement.currentSrc);
 
@@ -49,10 +56,10 @@ export default class MapArea extends React.Component {
     }
 
     onMapClick(e) {
-        if(this.imageIsClick) {
+        if (this.imageIsClick) {
             // console.dir(e);
             // console.dir(e.originalEvent);
-            console.log([e.originalEvent.offsetX,e.originalEvent.offsetY]);
+            console.log([e.originalEvent.offsetX, e.originalEvent.offsetY]);
             // console.dir(e.originalEvent.srcElement);
             console.dir(e.originalEvent.srcElement.currentSrc);
 
@@ -78,15 +85,38 @@ export default class MapArea extends React.Component {
             .openOn(map);
     }
 
-    render () {
+    showGrid() {
+        const map = this.refs.map.leafletElement;
+        new VirtualGrid({
+            cellSize: 64
+        }).addTo(map);
+    }
+
+    render() {
         const position = [this.state.center.lat, this.state.center.lng];
-        return (
-            <Map  ref="map" center={position} zoom={this.state.zoom} onClick={this.onMapClick.bind(this)} onMouseup={this.onMapMouseup.bind(this)} onMousedown={this.onMapMousedown.bind(this)}>
-                <TileLayer
-                    url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
-                    attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                />
-            </Map>
+        return ( <
+            Map ref = "map"
+            center = {
+                position
+            }
+            zoom = {
+                this.state.zoom
+            }
+            onClick = {
+                this.onMapClick.bind(this)
+            }
+            onMouseup = {
+                this.onMapMouseup.bind(this)
+            }
+            onMousedown = {
+                this.onMapMousedown.bind(this)
+            } >
+            <
+            TileLayer url = 'http://{s}.tile.osm.org/{z}/{x}/{y}.png'
+            attribution = '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' /
+            >
+            <
+            /Map>
         );
     }
 }
