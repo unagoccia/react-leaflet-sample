@@ -5,3 +5,4 @@ https://gsj-seamless.jp/labs/datatilemap/utilize.html
   
 * Leaflet.Toolbar  
 https://github.com/Leaflet/Leaflet.toolbar  
+exsample：minimal.html  
