@@ -20,8 +20,10 @@
   },
   "dependencies": {
     "leaflet": "^1.0.0-rc.3",
+    "radium": "^0.18.1",
     "react": "^15.3.1",
     "react-dom": "^15.3.1",
-    "react-leaflet": "^1.0.0-beta.3"
+    "react-leaflet": "^1.0.0-beta.3",
+    "react-leaflet-control": "^1.1.0"
   }
 }

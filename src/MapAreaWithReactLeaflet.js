@@ -2,6 +2,8 @@ import React from 'react';
 import { render } from 'react-dom';
 import L from 'leaflet';
 import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
+import Control from 'react-leaflet-control';
+import CustomControl from './CustomControl.js';
 import VirtualGrid from "./VirtualGrid.js";
 
 export default class MapArea extends React.Component {
@@ -131,6 +133,9 @@ export default class MapArea extends React.Component {
                     url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 />
+                <Control position="topleft">
+                    <CustomControl/>
+                </Control>
             </Map>
         );
     }
