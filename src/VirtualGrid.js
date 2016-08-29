@@ -102,6 +102,13 @@ var VirtualGrid = L.FeatureGroup.extend({
         this.clearLayers();
         this._renderCells(bounds);
     },
+    _cellTile: function(row, col) {
+        var x = this._origin.x + (row * this._cellSize);
+        var y = this._origin.y + (col * this._cellSize);
+        var tx = Math.floor( x / 256 );
+        var ty = Math.floor( y / 256 );
+        return {x: tx, y: ty};
+    },
     _cellPoint: function(row, col) {
         var x = this._origin.x + (row * this._cellSize);
         var y = this._origin.y + (col * this._cellSize);
@@ -127,11 +134,14 @@ var VirtualGrid = L.FeatureGroup.extend({
                 var row = i - offsetRows;
                 var col = j - offsetCols;
                 var cellBounds = this._cellExtent(row, col);
+                var tile = this._cellTile(row, col);
                 var cellId = row + ":" + col;
                 cells.push({
                     id: cellId,
                     bounds: cellBounds,
-                    distance: cellBounds.getCenter().distanceTo(center)
+                    center: cellBounds.getCenter(),
+                    distance: cellBounds.getCenter().distanceTo(center),
+                    tileCoordinates: tile
                 });
             }
         }
