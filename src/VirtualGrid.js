@@ -74,6 +74,7 @@ var VirtualGrid = L.FeatureGroup.extend({
         this._renderCells(e.target.getBounds());
     },
     _renderCells: function(bounds) {
+        // TODO 表示領域の左上端を起点にセルを描画し始める処理となっているので、表示領域の左上端を含むタイルの左上端を起点に表示領域の右下端を含むタイルの右下端までセルを描画するように修正する
         this._cells = this._cellsInBounds(bounds);
         this.fire("newcells", this._cells);
         for (var i = this._cells.length - 1; i >= 0; i--) {

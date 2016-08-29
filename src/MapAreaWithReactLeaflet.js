@@ -62,7 +62,7 @@ export default class MapArea extends React.Component {
         // console.dir(e);
         // console.dir(e.originalEvent);
         // console.dir(this.gridGroup);
-        // console.dir(this.gridGroup.getCell(e.latlng));
+        console.dir(this.gridGroup.getCell(e.latlng));
         // console.dir(this.gridGroup.getBounds());
 
         const tagName = e.originalEvent.srcElement.tagName;
