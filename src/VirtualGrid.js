@@ -6,6 +6,8 @@ var VirtualGrid = L.FeatureGroup.extend({
         cellSize: 256,
         delayFactor: 0,
         adjustTile: false,
+        selectedFillColor: "#3ac1f0",
+        selectedFillOpacity: .2,
         style: {
             stroke: true,
             color: '#000',
@@ -32,26 +34,7 @@ var VirtualGrid = L.FeatureGroup.extend({
         this._cells = [];
         this.drawAreaSize = this._map.getSize();
 
-        var zoom = this._map.getZoom();
-        var bounds = this._map.getBounds();
-        var dispNorthWest = bounds.getNorthWest();
-        var dispSouthEast = bounds.getSouthEast();
-        if(this.options.adjustTile) {
-            var tile = this._latlng2tile(dispNorthWest.lat, dispNorthWest.lng, zoom);
-            var latlng = this._tile2latlng(tile.tx, tile.ty, zoom);
-            var northWest = {lat: latlng.lat, lng: latlng.lng};
-            var northWest_p = this._latlng2pixel(northWest.lat, northWest.lng, zoom);
-            tile = this._latlng2tile(dispSouthEast.lat, dispSouthEast.lng, zoom);
-            latlng = this._tile2latlng(tile.tx+1, tile.ty+1, zoom);
-            var southEast = {lat: latlng.lat, lng: latlng.lng};
-            var southEast_p = this._latlng2pixel(southEast.lat, southEast.lng, zoom);
-            var northEast = L.latLng(southEast.lat, northWest.lng);
-            var southWest = L.latLng(northWest.lat, southEast.lng);
-            bounds = L.latLngBounds(southWest, northEast);
-            var sizeX =  Math.max(northWest_p.px, southEast_p.px) - Math.min(northWest_p.px, southEast_p.px);
-            var sizeY =  Math.max(northWest_p.py, southEast_p.py) - Math.min(northWest_p.py, southEast_p.py);
-            this.drawAreaSize = {x: sizeX, y: sizeY};
-        }
+        var bounds = this._getBounds(this._map.getBounds(), this._map.getZoom());
         this._setupGrid(bounds);
 
         this._map.on("move", this._moveHandler, this);
@@ -78,6 +61,32 @@ var VirtualGrid = L.FeatureGroup.extend({
             }
         });
         return result;
+    },
+    selectCell(cell) {
+        var selectCell = this._loadedCells.get(cell.id);
+        selectCell.gridObject.setStyle({fillColor: this.options.selectedFillColor, fillOpacity: this.options.selectedFillOpacity});
+        selectCell.gridObject.redraw();
+    },
+    _getBounds(bounds, zoom) {
+        if(this.options.adjustTile) {
+            var dispNorthWest = bounds.getNorthWest();
+            var dispSouthEast = bounds.getSouthEast();
+            var tile = this._latlng2tile(dispNorthWest.lat, dispNorthWest.lng, zoom);
+            var latlng = this._tile2latlng(tile.tx, tile.ty, zoom);
+            var northWest = {lat: latlng.lat, lng: latlng.lng};
+            var northWest_p = this._latlng2pixel(northWest.lat, northWest.lng, zoom);
+            tile = this._latlng2tile(dispSouthEast.lat, dispSouthEast.lng, zoom);
+            latlng = this._tile2latlng(tile.tx+1, tile.ty+1, zoom);
+            var southEast = {lat: latlng.lat, lng: latlng.lng};
+            var southEast_p = this._latlng2pixel(southEast.lat, southEast.lng, zoom);
+            var northEast = L.latLng(southEast.lat, northWest.lng);
+            var southWest = L.latLng(northWest.lat, southEast.lng);
+            bounds = L.latLngBounds(southWest, northEast);
+            var sizeX =  Math.max(northWest_p.px, southEast_p.px) - Math.min(northWest_p.px, southEast_p.px);
+            var sizeY =  Math.max(northWest_p.py, southEast_p.py) - Math.min(northWest_p.py, southEast_p.py);
+            this.drawAreaSize = {x: sizeX, y: sizeY};
+        }
+        return bounds;
     },
     _latlng2tile(lat, lng, zoom) {
         var pixel = this._latlng2pixel(lat, lng, zoom);
@@ -111,22 +120,27 @@ var VirtualGrid = L.FeatureGroup.extend({
         this._cells = [];
     },
     _moveHandler: function(e) {
-        this._renderCells(e.target.getBounds());
+        var bounds = this._getBounds(e.target.getBounds(), e.target.getZoom());
+        this._renderCells(bounds);
     },
     _zoomHandler: function(e) {
         this.clearLayers();
-        this._renderCells(e.target.getBounds());
+        var bounds = this._getBounds(e.target.getBounds(), e.target.getZoom());
+        this._renderCells(bounds);
     },
     _renderCells: function(bounds) {
         this._cells = this._cellsInBounds(bounds);
         this.fire("newcells", this._cells);
         for (var i = this._cells.length - 1; i >= 0; i--) {
             var cell = this._cells[i];
-            if (this._loadedCells.indexOf(cell.id) === -1) {
+            if(this._loadedCells.get(cell.id) === undefined) {
+            // if (this._loadedCells.indexOf(cell.id) === -1) {
                 (function(cell, i) {
-                    setTimeout(this.addLayer.bind(this, L.rectangle(cell.bounds, this.options.style)), this.options.delayFactor * i);
+                    cell.gridObject = L.rectangle(cell.bounds, this.options.style);
+                    setTimeout(this.addLayer.bind(this, cell.gridObject), this.options.delayFactor * i);
                 }.bind(this))(cell, i);
-                this._loadedCells.push(cell.id);
+                // this._loadedCells.push(cell.id);
+                this._loadedCells.set(cell.id,cell);
             }
         }
     },
@@ -134,7 +148,6 @@ var VirtualGrid = L.FeatureGroup.extend({
         this._setupSize();
     },
     _setupSize: function() {
-        console.info(this.drawAreaSize);
         this._rows = Math.ceil(this.drawAreaSize.x / this._cellSize);
         this._cols = Math.ceil(this.drawAreaSize.y / this._cellSize);
     },
@@ -142,7 +155,7 @@ var VirtualGrid = L.FeatureGroup.extend({
         this._origin = this._map.project(bounds.getNorthWest());
         this._cellSize = this.options.cellSize;
         this._setupSize();
-        this._loadedCells = [];
+        this._loadedCells = new Map();
         this._cells = [];
         this.clearLayers();
         this._renderCells(bounds);
@@ -173,6 +186,7 @@ var VirtualGrid = L.FeatureGroup.extend({
         var offsetY = this._origin.y - offset.y;
         var offsetRows = Math.round(offsetX / this._cellSize);
         var offsetCols = Math.round(offsetY / this._cellSize);
+        var cells = new Map();
         var cells = [];
         for (var i = 0; i <= this._rows; i++) {
             for (var j = 0; j <= this._cols; j++) {
@@ -181,6 +195,15 @@ var VirtualGrid = L.FeatureGroup.extend({
                 var cellBounds = this._cellExtent(row, col);
                 var tile = this._cellTile(row, col);
                 var cellId = row + ":" + col;
+                // cells.set(
+                //     cellId,
+                //     {
+                //         bounds: cellBounds,
+                //         center: cellBounds.getCenter(),
+                //         distance: cellBounds.getCenter().distanceTo(center),
+                //         tileCoordinates: tile
+                //     }
+                // );
                 cells.push({
                     id: cellId,
                     bounds: cellBounds,
