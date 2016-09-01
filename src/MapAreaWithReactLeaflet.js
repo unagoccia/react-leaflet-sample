@@ -21,11 +21,14 @@ export default class MapArea extends React.Component {
             maxWidth: 400
         });
         this.imageIsClick = false;
-        this.gridGroup;
+        this.gridGroup = new VirtualGrid({
+            cellSize: 64,
+            adjustTile: true
+        });
     }
 
     componentDidMount() {
-        this.showGrid();
+        // this.showGrid();
     }
 
     // onMapMousedown(e) {
@@ -59,6 +62,7 @@ export default class MapArea extends React.Component {
     // }
 
     onMapClick(e) {
+        this.showGrid();
         // console.dir(e);
         // console.dir(e.originalEvent);
         // console.dir(this.gridGroup);
@@ -107,9 +111,7 @@ export default class MapArea extends React.Component {
 
     showGrid() {
         const map = this.refs.map.leafletElement;
-        this.gridGroup = new VirtualGrid({
-            cellSize: 64
-        }).addTo(map);
+        this.gridGroup.addTo(map);
     }
 
     artanh(z) {

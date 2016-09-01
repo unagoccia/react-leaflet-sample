@@ -4,7 +4,8 @@ var VirtualGrid = L.FeatureGroup.extend({
     include: L.Mixin.Events,
     options: {
         cellSize: 256,
-        delayFactor: 2.5,
+        delayFactor: 0,
+        adjustTile: false,
         style: {
             stroke: true,
             color: '#000',
@@ -26,14 +27,59 @@ var VirtualGrid = L.FeatureGroup.extend({
         L.FeatureGroup.prototype.initialize.call(this, [], options);
     },
     onAdd: function(map) {
-        L.FeatureGroup.prototype.onAdd.call(this, map);
         this._map = map;
+        L.FeatureGroup.prototype.onAdd.call(this, this._map);
         this._cells = [];
-        this._setupGrid(map.getBounds());
+        this.drawAreaSize = this._map.getSize();
+        // L.marker([this._map.getCenter().lat, this._map.getCenter().lng]).addTo(this._map);
 
-        map.on("move", this._moveHandler, this);
-        map.on("zoomend", this._zoomHandler, this);
-        map.on("resize", this._resizeHandler, this);
+        var zoom = this._map.getZoom();
+        var bounds = this._map.getBounds();
+        var dispNorthWest = bounds.getNorthWest();
+        var dispSouthEast = bounds.getSouthEast();
+        if(this.options.adjustTile) {
+            var tile = this._latlng2tile(dispNorthWest.lat, dispNorthWest.lng, zoom);
+            var latlng = this._tile2latlng(tile.tx, tile.ty, zoom);
+            var northWest = {lat: latlng.lat, lng: latlng.lng};
+            // L.marker([northWest.lat, northWest.lng]).addTo(this._map);
+            var northWest_p = this._latlng2pixel(northWest.lat, northWest.lng, zoom);
+            // console.info(tile);
+            // console.info(latlng);
+            // console.info(northWest);
+            // console.info(northWest_p);
+            // this._map.setView(northWest);
+            tile = this._latlng2tile(dispSouthEast.lat, dispSouthEast.lng, zoom);
+            latlng = this._tile2latlng(tile.tx+1, tile.ty+1, zoom);
+            // this._map.setView(latlng);
+            var southEast = {lat: latlng.lat, lng: latlng.lng};
+            // this._map.setView([southEast.lat, southEast.lng]);
+            // L.marker([southEast.lat, southEast.lng]).addTo(this._map);
+            var southEast_p = this._latlng2pixel(southEast.lat, southEast.lng, zoom);
+            // console.info(tile);
+            // console.info(latlng);
+            // console.info(southEast);
+            // console.info(southEast_p);
+            // this._map.setView(southEast);
+            var northEast = L.latLng(southEast.lat, northWest.lng);
+            // console.info(northEast);
+            // this._map.setView(northEast);
+            var southWest = L.latLng(northWest.lat, southEast.lng);
+            // console.info(southWest);
+            // this._map.setView(northEast);
+            bounds = L.latLngBounds(southWest, northEast);
+            // console.info(bounds);
+            // console.info(Math.max(northWest_p.px, southEast_p.px));
+            // console.info(Math.min(northWest_p.px, southEast_p.px));
+            var sizeX =  Math.max(northWest_p.px, southEast_p.px) - Math.min(northWest_p.px, southEast_p.px);
+            var sizeY =  Math.max(northWest_p.py, southEast_p.py) - Math.min(northWest_p.py, southEast_p.py);
+            this.drawAreaSize = {x: sizeX, y: sizeY};
+        }
+        // console.info(bounds);
+        this._setupGrid(bounds);
+
+        this._map.on("move", this._moveHandler, this);
+        this._map.on("zoomend", this._zoomHandler, this);
+        this._map.on("resize", this._resizeHandler, this);
     },
     onRemove: function(map) {
         L.FeatureGroup.prototype.onRemove.call(this, map);
@@ -63,6 +109,34 @@ var VirtualGrid = L.FeatureGroup.extend({
         });
         return result;
     },
+    _latlng2tile(lat, lng, zoom) {
+        var pixel = this._latlng2pixel(lat, lng, zoom);
+        return this._pixel2tile(pixel.px, pixel.py, zoom);
+    },
+    _latlng2pixel(lat, lng, zoom) {
+        var px = Math.round( Math.pow( 2, zoom + 7 ) * ( lng / 180 + 1 ));
+        var py = Math.round( Math.pow( 2, zoom + 7 ) / Math.PI * ( -Math.atanh( Math.sin( Math.PI / 180 * lat )) + Math.atanh( Math.sin( Math.PI / 180 * 85.05112878))));
+        return {px: px, py: py};
+    },
+    _pixel2tile(px, py, zoom) {
+        var tx = Math.floor(px / 256);
+        var ty = Math.floor(py / 256);
+        return {tx: tx, ty: ty, zoom: zoom};
+    },
+    _tile2latlng(tx, ty, zoom) {
+        var pixel = this._tile2pixel(tx, ty);
+        return this._pixel2latlng(pixel.px, pixel.py, zoom);
+    },
+    _tile2pixel(tx, ty) {
+        var px = tx * 256;
+        var py = ty * 256;
+        return {px: px, py: py};
+    },
+    _pixel2latlng(px, py, zoom) {
+        var lat = 180 / Math.PI * ( Math.asin( Math.tanh(-Math.PI / Math.pow( 2, zoom + 7 ) * py + Math.atanh( Math.sin( Math.PI / 180 * 85.05112878 )))));
+        var lng = 180 * ( px / Math.pow( 2, zoom + 7 ) - 1 );
+        return {lat: lat, lng: lng}
+    },
     _clearLayer: function(e) {
         this._cells = [];
     },
@@ -91,8 +165,9 @@ var VirtualGrid = L.FeatureGroup.extend({
         this._setupSize();
     },
     _setupSize: function() {
-        this._rows = Math.ceil(this._map.getSize().x / this._cellSize);
-        this._cols = Math.ceil(this._map.getSize().y / this._cellSize);
+        console.info(this.drawAreaSize);
+        this._rows = Math.ceil(this.drawAreaSize.x / this._cellSize);
+        this._cols = Math.ceil(this.drawAreaSize.y / this._cellSize);
     },
     _setupGrid: function(bounds) {
         this._origin = this._map.project(bounds.getNorthWest());
@@ -124,11 +199,17 @@ var VirtualGrid = L.FeatureGroup.extend({
     },
     _cellsInBounds: function(bounds) {
         var offset = this._map.project(bounds.getNorthWest());
+        // console.info(this._origin);
+        // console.info(offset);
         var center = bounds.getCenter();
         var offsetX = this._origin.x - offset.x;
         var offsetY = this._origin.y - offset.y;
+        // console.info(offsetX);
+        // console.info(offsetY);
         var offsetRows = Math.round(offsetX / this._cellSize);
         var offsetCols = Math.round(offsetY / this._cellSize);
+        // console.info(offsetRows);
+        // console.info(offsetCols);
         var cells = [];
         for (var i = 0; i <= this._rows; i++) {
             for (var j = 0; j <= this._cols; j++) {
@@ -149,6 +230,7 @@ var VirtualGrid = L.FeatureGroup.extend({
         cells.sort(function(a, b) {
             return a.distance - b.distance;
         });
+        // console.info(cells);
         return cells;
     }
 });
