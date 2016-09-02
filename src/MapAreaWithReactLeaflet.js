@@ -25,9 +25,12 @@ export default class MapArea extends React.Component {
             cellSize: 64,
             adjustTile: true
         });
+        this.isShowGrid = false;
+        this.isMapLock = false;
     }
 
     componentDidMount() {
+        this.state = Object.assign({}, {map: this.refs.map.leafletElement});
         // this.showGrid();
     }
 
@@ -61,8 +64,31 @@ export default class MapArea extends React.Component {
     //     }
     // }
 
+    onClickBuntton1() {
+        const map = this.refs.map.leafletElement;
+        if(this.isShowGrid) {
+            this.hideGrid();
+        } else {
+            this.showGrid();
+        }
+        this.isShowGrid = !this.isShowGrid;
+    }
+
+    onClickBuntton2() {
+        const map = this.refs.map.leafletElement;
+        if(this.isMapLock) {
+            this.mapUnlock();
+        } else {
+            this.mapLock();
+        }
+        this.isMapLock = !this.isMapLock;
+    }
+
+    onClickBuntton3() {
+
+    }
+
     onMapClick(e) {
-        this.showGrid();
         // console.dir(e);
         // console.dir(e.originalEvent);
         // console.dir(this.gridGroup);
@@ -70,9 +96,9 @@ export default class MapArea extends React.Component {
         this.gridGroup.selectCell(this.gridGroup.getCell(e.latlng));
         // console.dir(this.gridGroup.getBounds());
 
-        const tagName = e.originalEvent.srcElement.tagName;
+        const className = e.originalEvent.srcElement.className;
         // if (this.imageIsClick) {
-        if (tagName == "IMG") {
+        if (className == "leaflet-tile leaflet-tile-loaded") {
             // console.log([e.originalEvent.offsetX, e.originalEvent.offsetY]);
             // console.dir(e.originalEvent.srcElement);
             // console.dir(e.originalEvent.srcElement.currentSrc);
@@ -115,6 +141,21 @@ export default class MapArea extends React.Component {
         this.gridGroup.addTo(map);
     }
 
+    hideGrid() {
+        const map = this.refs.map.leafletElement;
+        map.removeLayer(this.gridGroup);
+    }
+
+    mapLock() {
+        const map = this.refs.map.leafletElement;
+        map.dragging.disable();
+    };
+
+    mapUnlock() {
+        const map = this.refs.map.leafletElement;
+        map.dragging.enable();
+    };
+
     artanh(z) {
         return 1/2 * Math.log( ( 1 + z ) / ( 1 - z ) );
     }
@@ -130,6 +171,19 @@ export default class MapArea extends React.Component {
 
     render() {
         const position = [this.state.center.lat, this.state.center.lng];
+        const styles = {
+            menu: {
+                width: 26,
+                height: 26,
+                backgroundColor: 'white',
+                borderBottom: '1px solid #ccc',
+                padding: 3,
+            },
+            img: {
+                width: '100%',
+                height: 'auto',
+            }
+        };
         return (
             <Map ref="map" center={position} zoom={this.state.zoom} onClick={this.onMapClick.bind(this)} onZoomend={this.onMapZoomEnd.bind(this)} onZoomstart={this.onMapZoomStart.bind(this)}>
                 <TileLayer
@@ -137,7 +191,17 @@ export default class MapArea extends React.Component {
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 />
                 <Control position="topleft">
-                    <CustomControl/>
+                    <div>
+                        <div style={styles.menu} onClick={this.onClickBuntton1.bind(this)}>
+                            <img src="../imges/ico_garbage_can.png" style={styles.img}/>
+                        </div>
+                        <div style={styles.menu} onClick={this.onClickBuntton2.bind(this)}>
+                            <img src="../imges/ico_garbage_can.png" style={styles.img}/>
+                        </div>
+                        <div style={styles.menu} onClick={this.onClickBuntton3.bind(this)}>
+                            <img src="../imges/ico_garbage_can.png" style={styles.img}/>
+                        </div>
+                    </div>
                 </Control>
             </Map>
         );

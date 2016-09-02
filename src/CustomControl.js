@@ -4,6 +4,11 @@ import Radium from 'radium';
 
 export default class CustomControl extends React.Component {
 
+    onMapClick() {
+        const map = this.props.map;
+        map.setView([35,146]);
+    }
+
     render() {
         var styles = {
             menu: {
@@ -21,7 +26,7 @@ export default class CustomControl extends React.Component {
 
         return(
             <div>
-                <div style={styles.menu} onClick={ () => alert('garbage') }>
+                <div style={styles.menu} onClick={this.onMapClick().bind(this)}>
                     <img src="../imges/ico_garbage_can.png" style={styles.img}/>
                 </div>
             </div>
