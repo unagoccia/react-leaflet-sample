@@ -16,6 +16,7 @@ export default class MapArea extends React.Component {
                 lng: 139.6187337487936,
             },
             zoom: 15,
+            key: 'n/a'
         }
         this.popup = L.popup({
             maxWidth: 400
@@ -34,35 +35,24 @@ export default class MapArea extends React.Component {
         // this.showGrid();
     }
 
-    // onMapMousedown(e) {
-    //     const tagName = e.originalEvent.srcElement.tagName;
-    //     // console.log(tagName);
-    //     if (tagName == "IMG") {
-    //         this.imageIsClick = true;
-    //     } else {
-    //         this.imageIsClick = false;
-    //     }
-    //
-    //     const map = this.refs.map.leafletElement;
-    //     map.closePopup();
-    // }
+    onMapMousedown(e) {
+        this._startLatLng = e.latlng;
+        this._isDrawing = true;
+        console.info(e.originalEvent.shiftKey);
 
-    // onMapMouseup(e) {
-    //     if (!this.imageIsClick) {
-    //         // console.dir(e);
-    //         // console.dir(e.originalEvent);
-    //         console.log([e.originalEvent.offsetX, e.originalEvent.offsetY]);
-    //         // console.dir(e.originalEvent.srcElement);
-    //         console.dir(e.originalEvent.srcElement.currentSrc);
-    //
-    //         const pixelCoordinates = {
-    //             x: e.originalEvent.offsetX,
-    //             y: e.originalEvent.offsetY
-    //         };
-    //         const tileImageUrl = e.originalEvent.srcElement.currentSrc;
-    //         this.showPopup(e.latlng, pixelCoordinates, tileImageUrl);
-    //     }
-    // }
+    }
+
+    onMapMousemove(e) {
+        var latlng = e.latlng;
+        if (this._isDrawing) {
+            this.drawShape(latlng);
+        }
+    }
+
+    onMapMouseup(e) {
+        this._startLatLng = e.latlng;
+        this._isDrawing = false;
+    }
 
     onClickBuntton1() {
         const map = this.refs.map.leafletElement;
@@ -156,8 +146,24 @@ export default class MapArea extends React.Component {
         map.dragging.enable();
     };
 
-    artanh(z) {
-        return 1/2 * Math.log( ( 1 + z ) / ( 1 - z ) );
+    drawShape(latlng) {
+        const map = this.refs.map.leafletElement;
+        if (!this._shape) {
+            const shapeOptions = {
+    			stroke: true,
+    			color: '#f06eaa',
+    			weight: 4,
+    			opacity: 0.5,
+    			fill: true,
+    			fillColor: null, //same as color by default
+    			fillOpacity: 0.2,
+    			clickable: true
+    		}
+			this._shape = new L.Rectangle(new L.LatLngBounds(this._startLatLng, latlng), shapeOptions);
+			map.addLayer(this._shape);
+		} else {
+			this._shape.setBounds(new L.LatLngBounds(this._startLatLng, latlng));
+		}
     }
 
     getTile(bounds) {
@@ -185,7 +191,14 @@ export default class MapArea extends React.Component {
             }
         };
         return (
-            <Map ref="map" center={position} zoom={this.state.zoom} onClick={this.onMapClick.bind(this)} onZoomend={this.onMapZoomEnd.bind(this)} onZoomstart={this.onMapZoomStart.bind(this)}>
+            <Map ref="map" center={position} zoom={this.state.zoom}
+                onClick={this.onMapClick.bind(this)}
+                onZoomstart={this.onMapZoomStart.bind(this)}
+                onZoomend={this.onMapZoomEnd.bind(this)}
+                onMousedown={this.onMapMousedown.bind(this)}
+                onMousemove={this.onMapMousemove.bind(this)}
+                onMouseup={this.onMapMouseup.bind(this)}>
+
                 <TileLayer
                     url='http://{s}.tile.osm.org/{z}/{x}/{y}.png'
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'

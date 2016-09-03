@@ -20,9 +20,12 @@
   },
   "dependencies": {
     "leaflet": "^1.0.0-rc.3",
+    "leaflet-draw-drag": "^0.1.6",
     "radium": "^0.18.1",
     "react": "^15.3.1",
     "react-dom": "^15.3.1",
+    "react-key-handler": "^0.2.0",
+    "react-keydown": "^1.6.2",
     "react-leaflet": "^1.0.0-beta.3",
     "react-leaflet-control": "^1.1.0"
   }
